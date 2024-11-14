@@ -72,7 +72,7 @@ func (r *actorRepository) Get(id int) (*Actor, error) {
 	err = row.Scan(&actor.ID, &actor.Name, &actor.Gender, &actor.BirthDate)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Не найдено
+			return nil, nil
 		}
 		return nil, err
 	}
