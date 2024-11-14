@@ -32,7 +32,14 @@ func Run() error {
 
 	// Маршрутизация
 	http.HandleFunc("/movies/create", movieController.Create)
+	http.HandleFunc("/movies/get", movieController.Get)
+	http.HandleFunc("/movies/update", movieController.Update)
+	http.HandleFunc("/movies/delete", movieController.Delete)
+
 	http.HandleFunc("/actors/create", actorController.Create)
+	http.HandleFunc("/actors/get", actorController.Get)
+	http.HandleFunc("/actors/update", actorController.Update)
+	http.HandleFunc("/actors/delete", actorController.Delete)
 
 	// Запуск HTTP-сервера
 	fmt.Println("Запуск сервера на http://localhost:8080")
