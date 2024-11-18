@@ -2,7 +2,7 @@ package controller
 
 import (
 	"cinematheque/service"
-	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,94 +16,102 @@ func NewMovieController(service *service.MovieService) *MovieController {
 	return &MovieController{service: service}
 }
 
-func (c *MovieController) Create(w http.ResponseWriter, r *http.Request) {
-	title := r.FormValue("title")
-	description := r.FormValue("description")
-	releaseDate, err := time.Parse("2006-01-02", r.FormValue("release_date"))
+func (c *MovieController) Create(ctx *gin.Context) {
+	title := ctx.PostForm("title")
+	description := ctx.PostForm("description")
+	releaseDateStr := ctx.PostForm("release_date")
+
+	releaseDate, err := time.Parse("2006-01-02", releaseDateStr)
 	if err != nil {
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	rating, err := strconv.ParseFloat(r.FormValue("rating"), 64)
+
+	ratingStr := ctx.PostForm("rating")
+	rating, err := strconv.ParseFloat(ratingStr, 64)
 	if err != nil {
-		http.Error(w, "Invalid rating format", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid rating format"})
 		return
 	}
 
 	err = c.service.Create(title, description, releaseDate, rating)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	ctx.JSON(http.StatusCreated, gin.H{"message": "Movie created successfully"})
 }
 
-func (c *MovieController) Get(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+func (c *MovieController) Get(ctx *gin.Context) {
+	idStr := ctx.Query("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
 	movie, err := c.service.Get(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if movie == nil {
-		http.Error(w, "Movie not found", http.StatusNotFound)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(movie)
+	if movie == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Movie not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, movie)
 }
 
-func (c *MovieController) Update(w http.ResponseWriter, r *http.Request) {
-	idStr := r.FormValue("id")
+func (c *MovieController) Update(ctx *gin.Context) {
+	idStr := ctx.PostForm("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	title := r.FormValue("title")
-	description := r.FormValue("description")
-	releaseDate, err := time.Parse("2006-01-02", r.FormValue("release_date"))
+	title := ctx.PostForm("title")
+	description := ctx.PostForm("description")
+	releaseDateStr := ctx.PostForm("release_date")
+
+	releaseDate, err := time.Parse("2006-01-02", releaseDateStr)
 	if err != nil {
-		http.Error(w, "Invalid date format", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	rating, err := strconv.ParseFloat(r.FormValue("rating"), 64)
+
+	ratingStr := ctx.PostForm("rating")
+	rating, err := strconv.ParseFloat(ratingStr, 64)
 	if err != nil {
-		http.Error(w, "Invalid rating format", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid rating format"})
 		return
 	}
 
 	err = c.service.Update(id, title, description, releaseDate, rating)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	ctx.JSON(http.StatusOK, gin.H{"message": "Movie updated successfully"})
 }
 
-func (c *MovieController) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+func (c *MovieController) Delete(ctx *gin.Context) {
+	idStr := ctx.Query("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
 	err = c.service.Delete(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, gin.H{"message": "Movie deleted successfully"})
 }

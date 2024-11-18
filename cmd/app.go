@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"cinematheque/controller"
 	"cinematheque/internal/postgres"
 	"cinematheque/internal/repository"
+	"cinematheque/router"
 	"cinematheque/service"
+	"fmt"
 )
 
 func Run() error {
@@ -30,20 +29,12 @@ func Run() error {
 	movieController := controller.NewMovieController(movieService)
 	actorController := controller.NewActorController(actorService)
 
-	// Маршрутизация
-	http.HandleFunc("/movies/create", movieController.Create)
-	http.HandleFunc("/movies/get", movieController.Get)
-	http.HandleFunc("/movies/update", movieController.Update)
-	http.HandleFunc("/movies/delete", movieController.Delete)
-
-	http.HandleFunc("/actors/create", actorController.Create)
-	http.HandleFunc("/actors/get", actorController.Get)
-	http.HandleFunc("/actors/update", actorController.Update)
-	http.HandleFunc("/actors/delete", actorController.Delete)
+	// Настройка маршрутов через router
+	r := router.SetupRouter(movieController, actorController)
 
 	// Запуск HTTP-сервера
 	fmt.Println("Запуск сервера на http://localhost:8080")
-	return http.ListenAndServe(":8080", nil)
+	return r.Run(":8080")
 }
 
 func main() {
