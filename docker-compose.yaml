@@ -10,4 +10,3 @@ services:
       POSTGRES_PASSWORD: 123456789
     ports:
       - "5432:5432"
-        boolfalseNDA2991
