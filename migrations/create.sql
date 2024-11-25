@@ -20,4 +20,3 @@ CREATE TABLE movie_actors (
                               actor_id INT REFERENCES actors(id) ON DELETE CASCADE,
                               PRIMARY KEY (movie_id, actor_id)
 );
-migrations/create.sql

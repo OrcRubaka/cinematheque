@@ -4,9 +4,12 @@ import (
 	"cinematheque/controller"
 	"cinematheque/internal/postgres"
 	"cinematheque/internal/repository"
+	"cinematheque/migrations/db"
 	"cinematheque/router"
 	"cinematheque/service"
+	"database/sql"
 	"fmt"
+	"log"
 )
 
 func Run() error {
@@ -41,4 +44,17 @@ func main() {
 	if err := Run(); err != nil {
 		fmt.Printf("Ошибка при запуске приложения: %v\n", err)
 	}
+
+	connStr := "host=localhost port=5432 user=postgres password=123456789 dbname=cinematheque sslmode=disable"
+	dbConn, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("Database connection error: %v", err)
+	}
+	defer dbConn.Close()
+
+	// Запуск миграций
+	db.RunMigrations(dbConn)
+
+	log.Println("Application started successfully.")
+	// Здесь можно запускать сервер или другую логику
 }
